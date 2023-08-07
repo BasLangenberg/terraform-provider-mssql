@@ -1,13 +1,13 @@
 terraform {
-  required_version = "~> 0.13"
+  required_version = "~> 1"
   required_providers {
     docker = {
       source  = "terraform-providers/docker"
       version = "~> 2.7.2"
     }
     mssql = {
-      source  = "betr-io/mssql"
-      version = "~> 0.1.0"
+      source  = "betr.io/betr/mssql"
+      version = "~> 0.3.0"
     }
     random = {
       source  = "hashicorp/random"
@@ -45,6 +45,10 @@ resource "docker_container" "mssql" {
   name  = "mssql"
   image = docker_image.mssql.latest
   env   = ["ACCEPT_EULA=Y", "SA_PASSWORD=${local.local_password}"]
+  ports {
+    internal = 1433
+    external = 1433
+  }
 }
 
 resource "time_sleep" "wait_5_seconds" {
@@ -92,8 +96,33 @@ resource "mssql_user" "example" {
 }
 
 output "login" {
+  sensitive = true
   value = {
     login_name = mssql_login.example.login_name,
     password   = mssql_login.example.password
+  }
+}
+
+#
+# Creates a schema in a MSSQL Database
+#
+
+resource "mssql_schema" "example" {
+  server {
+    host = docker_container.mssql.ip_address
+    login {
+      username = local.local_username
+      password = local.local_password
+    }
+  }
+  database    = "master"
+  schema_name = "TEST"
+
+  depends_on = [time_sleep.wait_5_seconds]
+}
+
+output "schema" {
+  value = {
+    schema_name = mssql_schema.example.schema_name
   }
 }

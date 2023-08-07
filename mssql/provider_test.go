@@ -1,19 +1,20 @@
 package mssql
 
 import (
-  "bytes"
-  "context"
-  sql2 "database/sql"
-  "fmt"
-  "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-  "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-  "os"
-  "strconv"
-  "github.com/betr-io/terraform-provider-mssql/mssql/model"
-  "github.com/betr-io/terraform-provider-mssql/sql"
-  "testing"
-  "text/template"
-  "time"
+	"bytes"
+	"context"
+	sql2 "database/sql"
+	"fmt"
+	"os"
+	"strconv"
+	"testing"
+	"text/template"
+	"time"
+
+	"github.com/betr-io/terraform-provider-mssql/mssql/model"
+	"github.com/betr-io/terraform-provider-mssql/sql"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 var runLocalAccTests bool
@@ -63,6 +64,7 @@ type TestConnector interface {
   GetUser(database, name string) (*model.User, error)
   GetSystemUser() (string, error)
   GetCurrentUser(database string) (string, string, error)
+  GetSchema(database, name string) (*model.Schema, error)
 }
 
 type testConnector struct {
@@ -156,6 +158,10 @@ func (t testConnector) GetLogin(name string) (*model.Login, error) {
 
 func (t testConnector) GetUser(database, name string) (*model.User, error) {
   return t.c.(UserConnector).GetUser(context.Background(), database, name)
+}
+
+func (t testConnector) GetSchema(database, name string) (*model.Schema, error) {
+  return t.c.(SchemaConnector).GetSchema(context.Background(), database, name)
 }
 
 func (t testConnector) GetSystemUser() (string, error) {

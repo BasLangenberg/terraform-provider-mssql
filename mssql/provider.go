@@ -46,6 +46,7 @@ func Provider(factory model.ConnectorFactory) *schema.Provider {
     ResourcesMap: map[string]*schema.Resource{
       "mssql_login": resourceLogin(),
       "mssql_user":  resourceUser(),
+      "mssql_schema":  resourceSchema(),
     },
     DataSourcesMap: map[string]*schema.Resource{},
     ConfigureContextFunc: func(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
